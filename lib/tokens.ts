@@ -1,12 +1,37 @@
 import type { AgentToken } from "./types";
 
-export function makeTokenString(): string {
-  const hex = () => Math.random().toString(16).slice(2, 6).toUpperCase();
-  return `MAP_${hex()}-${hex()}-${hex()}-${hex()}`;
-}
-
 export function makeTokenId(): string {
   return `tok_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+/** Self-describing token so Vercel serverless instances can verify without shared disk. */
+export function encodeTokenString(
+  token: Omit<AgentToken, "tokenString">
+): string {
+  const json = JSON.stringify(token);
+  return `MAP_${Buffer.from(json, "utf8").toString("base64url")}`;
+}
+
+export function decodeTokenString(tokenString: string): AgentToken | null {
+  const raw = String(tokenString || "").trim();
+  if (!raw.startsWith("MAP_")) return null;
+  try {
+    const json = Buffer.from(raw.slice(4), "base64url").toString("utf8");
+    if (!json.startsWith("{")) return null;
+    const data = JSON.parse(json) as Omit<AgentToken, "tokenString">;
+    if (!data?.id || !data?.policyId) return null;
+    return { ...data, tokenString: raw };
+  } catch {
+    return null;
+  }
+}
+
+export function resolveTokenFromDb(
+  tokenString: string,
+  tokens: AgentToken[]
+): AgentToken | null {
+  const raw = String(tokenString || "").trim();
+  return tokens.find((t) => t.tokenString === raw) || decodeTokenString(raw);
 }
 
 export type VerifyInput = {

@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { readDb } from "@/lib/db";
-import { normalizeCategory, verifyTokenPolicy } from "@/lib/tokens";
+import {
+  normalizeCategory,
+  resolveTokenFromDb,
+  verifyTokenPolicy,
+} from "@/lib/tokens";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +25,7 @@ export async function POST(req: Request) {
     }
 
     const db = await readDb();
-    const token = db.tokens.find((t) => t.tokenString === tokenString);
+    const token = resolveTokenFromDb(tokenString, db.tokens);
 
     if (!token) {
       return NextResponse.json(

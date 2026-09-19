@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { mapRevertToCode, onChainSpend } from "@/lib/contract";
 import { readDb, updateDb } from "@/lib/db";
+import { resolveOrderFromDb } from "@/lib/orders";
 import { getProduct } from "@/lib/products";
-import { verifyTokenPolicy } from "@/lib/tokens";
+import { resolveTokenFromDb, verifyTokenPolicy } from "@/lib/tokens";
 import type { Hex } from "viem";
 import type { Invoice, Order } from "@/lib/types";
 
@@ -12,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request, { params }: Params) {
   try {
-    const id = params.id;
+    const id = decodeURIComponent(params.id);
     const body = await req.json();
     // Accept aliases used by curl/docs/bots: agent_token | token | tokenString
     const tokenString = (body?.tokenString ?? body?.agent_token ?? body?.token) as
@@ -30,7 +31,7 @@ export async function POST(req: Request, { params }: Params) {
     }
 
     const db = await readDb();
-    const order = db.orders.find((o) => o.id === id);
+    const order = resolveOrderFromDb(id, db.orders);
     if (!order) {
       return NextResponse.json({ error: "ORDER_NOT_FOUND" }, { status: 404 });
     }
@@ -65,14 +66,20 @@ export async function POST(req: Request, { params }: Params) {
       createdAt: new Date().toISOString(),
     });
 
+    const upsertOrder = (dbState: typeof db, next: Order) => {
+      const idx = dbState.orders.findIndex((x) => x.id === next.id);
+      if (idx >= 0) dbState.orders[idx] = next;
+      else dbState.orders.push(next);
+    };
+
     const finalizeCod = async (): Promise<Order> => {
       let updatedOrder!: Order;
       await updateDb((dbState) => {
-        const o = dbState.orders.find((x) => x.id === id);
-        if (!o) return;
+        const o = resolveOrderFromDb(id, dbState.orders) || { ...order };
         o.status = "COD_PENDING";
         o.paymentMethod = paymentMethod;
         updatedOrder = { ...o };
+        upsertOrder(dbState, updatedOrder);
         dbState.invoices.push(createInvoice("COD_PENDING", {}));
       });
       return updatedOrder;
@@ -87,11 +94,11 @@ export async function POST(req: Request, { params }: Params) {
       let updatedOrder!: Order;
       let invoice!: Invoice;
       await updateDb((dbState) => {
-        const o = dbState.orders.find((x) => x.id === id);
-        if (!o) return;
+        const o = resolveOrderFromDb(id, dbState.orders) || { ...order };
         o.status = "PAID";
         o.paymentMethod = "human_card";
         updatedOrder = { ...o };
+        upsertOrder(dbState, updatedOrder);
         invoice = createInvoice("PAID", { txHash: body?.txHash ?? "demo-card" });
         dbState.invoices.push(invoice);
       });
@@ -106,7 +113,7 @@ export async function POST(req: Request, { params }: Params) {
         return NextResponse.json({ error: "MERCHANT_ADDRESS_MISSING" }, { status: 500 });
       }
 
-      const token = db.tokens.find((t) => t.tokenString === tokenString);
+      const token = resolveTokenFromDb(tokenString, db.tokens);
       if (!token) {
         return NextResponse.json({ error: "TOKEN_NOT_FOUND" }, { status: 400 });
       }
@@ -128,26 +135,30 @@ export async function POST(req: Request, { params }: Params) {
           amountUsd: order.amountUsd,
           category: order.category,
           website: order.merchant,
-          orderId: order.id,
+          orderId: `${order.productId}:${order.createdAt}`,
         });
 
         let updatedOrder!: Order;
         let invoice!: Invoice;
         await updateDb((dbState) => {
-          const o = dbState.orders.find((x) => x.id === id);
-          const t = dbState.tokens.find((x) => x.id === token.id);
-          if (!o || !t) return;
+          let t = resolveTokenFromDb(token.tokenString, dbState.tokens);
+          if (!t) {
+            t = { ...token };
+            dbState.tokens.push(t);
+          }
 
-          t.spentUsd += o.amountUsd;
+          t.spentUsd += order.amountUsd;
           if (t.singleUse) {
             t.used = true;
             t.status = "used";
           }
 
+          const o = resolveOrderFromDb(id, dbState.orders) || { ...order };
           o.status = "PAID";
           o.paymentMethod = "agent_token";
           o.tokenId = t.id;
           updatedOrder = { ...o };
+          upsertOrder(dbState, updatedOrder);
 
           invoice = createInvoice("PAID", { txHash, tokenId: t.id });
           dbState.invoices.push(invoice);
@@ -170,9 +181,9 @@ export async function POST(req: Request, { params }: Params) {
         ]);
         if (fatal.has(code)) {
           await updateDb((dbState) => {
-            const o = dbState.orders.find((x) => x.id === id);
-            if (!o) return;
+            const o = resolveOrderFromDb(id, dbState.orders) || { ...order };
             o.status = "FAILED";
+            upsertOrder(dbState, o);
             dbState.invoices.push(createInvoice("FAILED", { tokenId: token.id }));
           });
         }

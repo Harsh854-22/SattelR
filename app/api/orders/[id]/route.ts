@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { readDb } from "@/lib/db";
+import { resolveOrderFromDb } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
 
@@ -8,9 +9,9 @@ type Params = { params: { id: string } };
 
 export async function GET(_req: Request, { params }: Params) {
   try {
-    const { id } = params;
+    const id = decodeURIComponent(params.id);
     const db = await readDb();
-    const order = db.orders.find((o) => o.id === id);
+    const order = resolveOrderFromDb(id, db.orders);
 
     if (!order) {
       return NextResponse.json({ error: "ORDER_NOT_FOUND" }, { status: 404 });

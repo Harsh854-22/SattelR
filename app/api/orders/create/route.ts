@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { updateDb } from "@/lib/db";
+import { encodeOrderId } from "@/lib/orders";
 import { getProduct } from "@/lib/products";
 import type { Order } from "@/lib/types";
 
@@ -33,8 +34,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "DELIVERY_NOT_AVAILABLE" }, { status: 400 });
     }
 
-    const order: Order = {
-      id: `order_${Date.now()}`,
+    const orderBase: Omit<Order, "id"> = {
       productId: product.id,
       productName: product.name,
       merchant: product.merchant,
@@ -46,6 +46,7 @@ export async function POST(req: Request) {
       createdAt: new Date().toISOString(),
       qty,
     };
+    const order: Order = { ...orderBase, id: encodeOrderId(orderBase) };
 
     await updateDb((db) => {
       db.orders.push(order);

@@ -252,7 +252,9 @@ export default function MerchantPage() {
       setStep("main");
       return;
     }
-    const pay = await fetch(`/api/orders/${create.order.id}/pay`, {
+    const pay = await fetch(
+      `/api/orders/${encodeURIComponent(create.order.id)}/pay`,
+      {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -297,7 +299,9 @@ export default function MerchantPage() {
         throw new Error(create.error || "ORDER_CREATE_FAILED");
       }
 
-      const payRes = await fetch(`/api/orders/${create.order.id}/pay`, {
+      const payRes = await fetch(
+        `/api/orders/${encodeURIComponent(create.order.id)}/pay`,
+        {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

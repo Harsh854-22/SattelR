@@ -166,7 +166,7 @@ export async function pay_with_agent_token(args: {
 }) {
   log("TOOL pay_with_agent_token", { orderId: args.orderId });
   return api<{ invoice?: Invoice; txHash?: string; error?: string }>(
-    `/api/orders/${args.orderId}/pay`,
+    `/api/orders/${encodeURIComponent(args.orderId)}/pay`,
     {
       method: "POST",
       body: JSON.stringify({
