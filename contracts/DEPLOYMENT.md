@@ -1,38 +1,59 @@
 # AgentPayVault Deployment
 
-## Network
+## Monad Mainnet
+
+- **Network:** Monad Mainnet
+- **Chain ID:** 143
+- **RPC:** https://rpc.monad.xyz
+- **Name:** AgentPayVault
+- **Address:** 0x3d63a735225e4Ab159039fB9048E7408f7A35bf2
+- **Deployer (owner/human):** 0x1F3305F4d20F49c3505B5175d76A6619E4d00B38
+- **Deploy tx:** 0x359f3029a763ef3ea3f25ef7ba15db46d4295117cb34bf1a101d7aece1565d71
+- **Block:** 106177810 (`0x6542512`)
+- **Type:** CREATE (nonce 0)
+- **Gas used:** 1,331,874
+- Contract: https://monadvision.com/address/0x3d63a735225e4Ab159039fB9048E7408f7A35bf2
+- Deploy tx: https://monadvision.com/tx/0x359f3029a763ef3ea3f25ef7ba15db46d4295117cb34bf1a101d7aece1565d71
+- Monadscan: https://monadscan.com/tx/0x359f3029a763ef3ea3f25ef7ba15db46d4295117cb34bf1a101d7aece1565d71
+- **Verification:** success (`exact_match`)
+- **Verifier:** Sourcify (https://sourcify-api-monad.blockvision.org/)
+- **Job ID:** d7c82245-87cb-403f-b72a-4c12a35736a4
+
+Broadcast artifact: `broadcast/Deploy.s.sol/143/run-latest.json`
+
+Same contract address as testnet because both deploys used CREATE at nonce 0 from the same owner.
+
+## Monad Testnet
+
 - **Network:** Monad Testnet
 - **Chain ID:** 10143
 - **RPC:** https://testnet-rpc.monad.xyz
-
-## Contract
 - **Name:** AgentPayVault
 - **Address:** 0x3d63a735225e4Ab159039fB9048E7408f7A35bf2
 - **Deployer (owner/human):** 0x1F3305F4d20F49c3505B5175d76A6619E4d00B38
 - **Deploy tx:** 0xbb49b333fdb2d5a57e41bfddabbf7a3b168481eafdad926258614e180534283f
-
-## Explorer
 - Contract: https://testnet.monadvision.com/address/0x3d63a735225e4Ab159039fB9048E7408f7A35bf2
 - Deploy tx: https://testnet.monadvision.com/tx/0xbb49b333fdb2d5a57e41bfddabbf7a3b168481eafdad926258614e180534283f
-
-## Verification
-- **Status:** success (exact_match)
+- **Verification:** success (`exact_match`)
 - **Verifier:** Sourcify (https://sourcify-api-monad.blockvision.org/)
 - **Job ID:** a9253e6f-8ab3-40ae-b892-224e9c4552dc
 
+Broadcast artifact: `broadcast/Deploy.s.sol/10143/run-latest.json`
+
 ## Brief usage
+
 1. **topUp** — Fund the vault with native MON (payable).
 2. **grantPermission** — Owner grants an agent spend rights (limits / allowances as defined by the contract).
 3. **spend** — Authorized agent spends from the vault within granted permissions.
 
-Broadcast artifact: broadcast/Deploy.s.sol/10143/run-latest.json
-
 ## Test status
 
 ### Local (Foundry)
+
 - **12/12 passed** — happy path + wrong website/category, stranger, over limit, revoke, insufficient balance, expired, single-use reuse, onlyOwner, remainingAllowance
 
 ### Live Monad Testnet smoke (2026-09-19)
+
 | Step | Result |
 | --- | --- |
 | topUp 0.05 MON | [tx](https://testnet.monadvision.com/tx/0x2aadb26278b5dd90ab3adcc5cfaca45bf5b511826657e160b2da790c4882c2f9) |
