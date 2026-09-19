@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OPEN_MART // Agent-Ready Storefront</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4F1EC;      /* 60% */
+  --ink:#141414;        /* 30% */
+  --white:#FFFFFF;      /* 30% */
+  --line:#141414;
+  --muted:#7A766E;
+  --accent:#FF3D00;     /* 10% */
+  --err:#D00000;
+  --font-main:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-main);-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--paper)}
+.mono{font-family:var(--font-mono)}
+.accent{color:var(--accent)}
+button{font-family:inherit}
+
+.noise{position:fixed;inset:0;pointer-events:none;z-index:5;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+/* HEADER */
+header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.2rem 3rem;border-bottom:2px solid var(--ink);
+  position:sticky;top:0;background:var(--paper);z-index:40;
+}
+.logo{font-family:var(--font-mono);font-weight:700;font-size:1.1rem;letter-spacing:-.02em}
+.head-right{display:flex;align-items:center;gap:1.5rem}
+.head-tag{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.cart-btn{
+  background:var(--ink);color:var(--paper);border:2px solid var(--ink);
+  padding:.7rem 1.3rem;font-family:var(--font-mono);font-size:.75rem;
+  letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:2px;
+  display:flex;align-items:center;gap:.6rem;transition:all .2s;
+}
+.cart-btn:hover{background:var(--accent);border-color:var(--accent)}
+.cart-count{background:var(--accent);color:var(--ink);font-weight:700;padding:.05rem .45rem;border-radius:2px}
+.cart-btn:hover .cart-count{background:var(--ink);color:var(--accent)}
+
+/* HERO STRIP */
+.store-hero{padding:4.5rem 3rem 3rem;border-bottom:2px solid var(--ink)}
+.store-hero h1{
+  font-size:clamp(2.6rem,7.5vw,7rem);font-weight:900;letter-spacing:-.05em;
+  line-height:.9;text-transform:uppercase;
+}
+.store-hero p{
+  margin-top:1.6rem;font-family:var(--font-mono);font-size:.8rem;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--muted);max-width:70ch;line-height:1.8;
+}
+
+/* TOOLBAR */
+.toolbar{
+  display:flex;gap:1.2rem;align-items:center;flex-wrap:wrap;
+  padding:1.4rem 3rem;border-bottom:1px solid var(--ink);
+  position:sticky;top:63px;background:var(--paper);z-index:30;
+}
+.search{
+  flex:1;min-width:220px;background:var(--white);border:2px solid var(--ink);
+  padding:.85rem 1.1rem;font-family:var(--font-mono);font-size:.85rem;outline:none;border-radius:2px;
+}
+.search:focus{border-color:var(--accent)}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap}
+.chip{
+  background:transparent;border:2px solid var(--ink);padding:.6rem 1rem;
+  font-family:var(--font-mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+  cursor:pointer;border-radius:2px;transition:all .2s;
+}
+.chip:hover{background:var(--ink);color:var(--paper)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--ink);font-weight:700}
+
+/* GRID */
+.grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:0;border-left:1px solid var(--ink);
+}
+.card{
+  border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);
+  padding:1.4rem;display:flex;flex-direction:column;gap:.9rem;
+  background:var(--paper);transition:background .25s,color .25s;position:relative;
+}
+.card:hover{background:var(--ink);color:var(--paper)}
+.card:hover .p-cat,.card:hover .p-rate{color:var(--paper)}
+.card:hover .p-num{color:transparent;-webkit-text-stroke:1px var(--paper)}
+.p-top{display:flex;justify-content:space-between;align-items:flex-start}
+.p-num{
+  font-family:var(--font-mono);font-size:2.6rem;font-weight:700;line-height:1;
+  color:transparent;-webkit-text-stroke:1px var(--ink);transition:all .25s;
+}
+.p-cat{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);transition:color .25s}
+.p-name{font-size:1.05rem;font-weight:800;text-transform:uppercase;letter-spacing:-.01em;line-height:1.15;min-height:2.3em}
+.p-rate{font-family:var(--font-mono);font-size:.7rem;color:var(--muted);transition:color .25s}
+.p-bottom{display:flex;justify-content:space-between;align-items:center;gap:.8rem;margin-top:auto}
+.p-price{font-family:var(--font-mono);font-size:1.05rem;font-weight:700}
+.add-btn{
+  background:var(--ink);color:var(--paper);border:2px solid var(--ink);
+  padding:.6rem 1rem;font-family:var(--font-mono);font-size:.7rem;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s;
+}
+.card:hover .add-btn{background:var(--accent);border-color:var(--accent);color:var(--ink)}
+.add-btn:active{transform:scale(.95)}
+
+/* CART DRAWER */
+.drawer-back{position:fixed;inset:0;background:rgba(20,20,20,.4);z-index:60;opacity:0;pointer-events:none;transition:opacity .3s}
+.drawer-back.open{opacity:1;pointer-events:auto}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(440px,100vw);
+  background:var(--paper);border-left:2px solid var(--ink);z-index:70;
+  transform:translateX(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);
+  display:flex;flex-direction:column;
+}
+.drawer.open{transform:none}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;padding:1.4rem 1.6rem;border-bottom:2px solid var(--ink)}
+.drawer-head h3{font-size:1.2rem;font-weight:900;text-transform:uppercase;letter-spacing:-.01em}
+.x-btn{background:transparent;border:none;font-size:1.5rem;cursor:pointer;color:var(--ink);line-height:1}
+.drawer-body{flex:1;overflow-y:auto;padding:1.2rem 1.6rem}
+.empty-cart{font-family:var(--font-mono);font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;padding:2rem 0}
+.line{display:grid;grid-template-columns:1fr auto;gap:.6rem;padding:1rem 0;border-bottom:1px solid var(--ink);align-items:center}
+.line-name{font-weight:700;font-size:.9rem;text-transform:uppercase}
+.line-meta{font-family:var(--font-mono);font-size:.7rem;color:var(--muted);margin-top:.25rem}
+.qty{display:flex;align-items:center;gap:.6rem;font-family:var(--font-mono);font-size:.85rem}
+.qty button{width:26px;height:26px;border:2px solid var(--ink);background:transparent;cursor:pointer;font-weight:700;border-radius:2px}
+.qty button:hover{background:var(--ink);color:var(--paper)}
+.line-price{font-family:var(--font-mono);font-weight:700;font-size:.9rem;text-align:right}
+.rm{background:none;border:none;color:var(--muted);font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;cursor:pointer;text-transform:uppercase;margin-top:.4rem}
+.rm:hover{color:var(--err)}
+.drawer-foot{border-top:2px solid var(--ink);padding:1.4rem 1.6rem}
+.total-row{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:1rem;font-weight:700;margin-bottom:1.1rem}
+.checkout-btn{
+  width:100%;background:var(--accent);color:var(--ink);border:2px solid var(--ink);
+  padding:1.2rem;font-family:var(--font-mono);font-size:.85rem;font-weight:700;
+  letter-spacing:.15em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s;
+}
+.checkout-btn:hover{background:var(--ink);color:var(--accent)}
+
+/* CHECKOUT MODAL */
+.co-back{position:fixed;inset:0;background:rgba(20,20,20,.55);backdrop-filter:blur(8px);z-index:90;display:flex;align-items:center;justify-content:center;padding:1.2rem;opacity:0;pointer-events:none;transition:opacity .3s}
+.co-back.open{opacity:1;pointer-events:auto}
+.co-modal{
+  width:min(560px,96vw);max-height:92vh;overflow-y:auto;background:var(--paper);
+  border:2px solid var(--ink);border-radius:3px;padding:2.4rem;position:relative;
+  transform:translateY(16px);transition:transform .35s cubic-bezier(.16,1,.3,1);
+}
+.co-back.open .co-modal{transform:none}
+.co-modal::-webkit-scrollbar{width:5px}.co-modal::-webkit-scrollbar-thumb{background:var(--ink)}
+.co-x{position:absolute;top:1rem;right:1rem;background:transparent;border:none;font-size:1.5rem;cursor:pointer;color:var(--ink)}
+.co-title{font-size:1.7rem;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;margin-bottom:.4rem}
+.co-sub{font-family:var(--font-mono);font-size:.72rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1.6rem}
+.co-sum{border:2px solid var(--ink);border-radius:2px;background:var(--white);padding:1rem 1.2rem;margin-bottom:1.2rem;font-family:var(--font-mono);font-size:.78rem;line-height:1.9}
+.co-total-row{display:flex;justify-content:space-between;font-family:var(--font-mono);font-weight:700;font-size:1.05rem;border-top:2px solid var(--ink);padding-top:.8rem;margin-bottom:1.8rem}
+.who-label{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem}
+.who-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.6rem}
+.who-btn{
+  padding:1.5rem 1rem;border:2px solid var(--ink);background:var(--white);
+  font-family:var(--font-mono);font-size:1rem;font-weight:700;letter-spacing:.15em;
+  text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s;
+}
+.who-btn small{display:block;font-size:.6rem;font-weight:400;letter-spacing:.1em;color:var(--muted);margin-top:.4rem}
+.who-btn:hover{transform:translateY(-2px)}
+.who-btn.sel-human{background:var(--ink);color:var(--paper)}
+.who-btn.sel-human small{color:var(--paper)}
+.who-btn.sel-agent{background:var(--accent);color:var(--ink)}
+.who-btn.sel-agent small{color:var(--ink)}
+.pane{border:2px solid var(--ink);border-radius:2px;background:var(--white);padding:1.4rem;margin-bottom:1rem}
+.pane label{display:block;font-family:var(--font-mono);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.pane input{
+  width:100%;background:var(--paper);border:2px solid var(--ink);padding:.95rem 1rem;
+  font-family:var(--font-mono);font-size:.95rem;outline:none;border-radius:2px;margin-bottom:1rem;
+}
+.pane input:focus{border-color:var(--accent)}
+.pane-btn{
+  width:100%;background:var(--ink);color:var(--paper);border:2px solid var(--ink);
+  padding:1.05rem;font-family:var(--font-mono);font-size:.82rem;font-weight:700;
+  letter-spacing:.15em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s;
+}
+.pane-btn:hover{background:var(--accent);color:var(--ink);border-color:var(--ink)}
+.test-tokens{margin-top:1rem;font-family:var(--font-mono);font-size:.66rem;color:var(--muted);line-height:2;letter-spacing:.04em}
+.test-tokens b{color:var(--ink);cursor:pointer;text-decoration:underline}
+.err{margin-top:.9rem;font-family:var(--font-mono);font-size:.75rem;color:var(--err);font-weight:700;letter-spacing:.06em}
+.owner-box{margin-top:1.2rem;border:2px solid var(--accent);background:var(--paper);border-radius:2px;padding:1.3rem;text-align:center}
+.owner-label{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.owner-name{font-size:1.6rem;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;margin-bottom:1.1rem}
+.auth-btn{width:100%;background:var(--accent);color:var(--ink);border:2px solid var(--ink);padding:1.05rem;font-family:var(--font-mono);font-size:.82rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;border-radius:2px}
+.auth-btn:hover{background:var(--ink);color:var(--accent)}
+.processing{padding:3rem 0;text-align:center;font-family:var(--font-mono);font-size:.9rem;letter-spacing:.2em;text-transform:uppercase}
+.processing .blink{animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.success{text-align:center;padding:1rem 0}
+.s-check{width:64px;height:64px;border-radius:50%;background:var(--accent);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1.4rem;animation:pop .5s cubic-bezier(.16,1,.3,1)}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.s-title{font-size:2rem;font-weight:900;text-transform:uppercase;letter-spacing:-.03em;margin-bottom:.6rem}
+.s-meta{font-family:var(--font-mono);font-size:.75rem;color:var(--muted);line-height:2;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.6rem}
+.inv-box{border:2px solid var(--ink);background:var(--white);border-radius:2px;padding:1.3rem;text-align:left;margin-bottom:1rem}
+.inv-head{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:.9rem}
+.inv-head .pdf-tag{background:var(--accent);border:2px solid var(--ink);padding:.15rem .5rem;font-weight:700}
+.inv-id{font-family:var(--font-mono);font-size:.85rem;font-weight:700;margin-bottom:1rem;word-break:break-all}
+.inv-actions{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.inv-btn{padding:.9rem;border:2px solid var(--ink);background:var(--paper);font-family:var(--font-mono);font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s}
+.inv-btn:hover{background:var(--ink);color:var(--paper)}
+.inv-btn.primary{background:var(--accent)}
+.inv-btn.primary:hover{background:var(--ink);color:var(--accent)}
+.handoff{font-family:var(--font-mono);font-size:.66rem;color:var(--muted);letter-spacing:.08em;line-height:1.8;text-transform:uppercase}
+
+/* FOOTER */
+footer{border-top:2px solid var(--ink);padding:2.4rem 3rem;display:flex;justify-content:space-between;gap:2rem;flex-wrap:wrap;font-family:var(--font-mono);font-size:.68rem;color:var(--muted);letter-spacing:.08em;line-height:2;text-transform:uppercase}
+footer b{color:var(--ink)}
+
+@media (max-width:760px){
+  header,.store-hero,.toolbar,footer{padding-left:1.2rem;padding-right:1.2rem}
+  .toolbar{top:59px}
+  .head-tag{display:none}
+  .who-row,.inv-actions{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="noise"></div>
+
+<header>
+  <div class="logo">OPEN<span class="accent">_</span>MART</div>
+  <div class="head-right">
+    <span class="head-tag">NO LOGIN · NO SIGNUP · AGENT-READY</span>
+    <button class="cart-btn" id="cartOpen" data-agent="open-cart">CART <span class="cart-count" id="cartCount">0</span></button>
+  </div>
+</header>
+
+<section class="store-hero">
+  <h1>SHOP<span class="accent">.</span><br>AGENTS WELCOME<span class="accent">.</span></h1>
+  <p>Browse the catalog. Add to cart. At checkout choose HUMAN or AGENT. Agents paste a Monad access token — only the owner's name is revealed. Payment success generates a PDF invoice, handed to the agent for delivery.</p>
+</section>
+
+<div class="toolbar">
+  <input class="search" id="search" type="text" placeholder="SEARCH CATALOG…" data-agent="search">
+  <div class="chips" id="chips">
+    <button class="chip on" data-cat="ALL">ALL</button>
+    <button class="chip" data-cat="ELECTRONICS">ELECTRONICS</button>
+    <button class="chip" data-cat="HOME">HOME</button>
+    <button class="chip" data-cat="APPAREL">APPAREL</button>
+    <button class="chip" data-cat="ACCESSORIES">ACCESSORIES</button>
+  </div>
+</div>
+
+<main class="grid" id="grid" data-agent="catalog-grid"></main>
+
+<!-- CART DRAWER -->
+<div class="drawer-back" id="drawerBack"></div>
+<aside class="drawer" id="drawer" data-agent="cart">
+  <div class="drawer-head"><h3>Your Cart</h3><button class="x-btn" id="cartClose">×</button></div>
+  <div class="drawer-body" id="cartBody"></div>
+  <div class="drawer-foot">
+    <div class="total-row"><span>TOTAL</span><span id="cartTotal">$0.00</span></div>
+    <button class="checkout-btn" id="checkoutBtn" data-agent="checkout">CHECKOUT ↗</button>
+  </div>
+</aside>
+
+<!-- CHECKOUT MODAL -->
+<div class="co-back" id="coBack">
+  <div class="co-modal">
+    <button class="co-x" id="coClose">×</button>
+
+    <div id="stepMain">
+      <div class="co-title">Checkout</div>
+      <div class="co-sub">SETTLEMENT: MONAD TESTNET · INSTANT</div>
+      <div class="co-sum" id="coSum"></div>
+      <div class="co-total-row"><span>TOTAL DUE</span><span id="coTotal"></span></div>
+
+      <div class="who-label">WHO IS PAYING?</div>
+      <div class="who-row">
+        <button class="who-btn" id="whoHuman" data-agent="pay-human">HUMAN<small>CARD PAYMENT</small></button>
+        <button class="who-btn" id="whoAgent" data-agent="pay-agent">AGENT<small>TOKEN PAYMENT</small></button>
+      </div>
+
+      <div class="pane" id="humanPane" hidden>
+        <label>CARDHOLDER NAME</label>
+        <input id="humanName" value="Demo Shopper">
+        <label>CARD NUMBER (DEMO)</label>
+        <input id="humanCard" value="4242 4242 4242 4242">
+        <button class="pane-btn" id="humanPay">PAY NOW ↗</button>
+      </div>
+
+      <div class="pane" id="agentPane" hidden>
+        <form id="tokenForm">
+          <label>PASTE AGENT ACCESS TOKEN</label>
+          <input id="tokenInput" placeholder="MAP_XXXX-XXXX-XXXX-XXXX" autocomplete="off" data-agent="token-input">
+          <button class="pane-btn" type="submit" data-agent="token-enter">ENTER ↵</button>
+        </form>
+        <div class="test-tokens">
+          TEST TOKENS (CLICK TO FILL):<br>
+          <b data-fill="MAP_7F3A-9C2E-4B81-D60A">MAP_7F3A-9C2E-4B81-D60A</b> — CAP $50.00<br>
+          <b data-fill="MAP_2D81-55AB-E019-77FC">MAP_2D81-55AB-E019-77FC</b> — CAP $12.50
+        </div>
+        <div class="err" id="tokenErr" hidden></div>
+        <div class="owner-box" id="ownerBox" hidden>
+          <div class="owner-label">AUTHORIZED PAYER — NAME ONLY</div>
+          <div class="owner-name" id="ownerName"></div>
+          <button class="auth-btn" id="authBtn" data-agent="authorize">AUTHORIZE PAYMENT</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="stepProcessing" hidden>
+      <div class="processing">SETTLING ON MONAD<span class="blink">…</span></div>
+    </div>
+
+    <div id="stepSuccess" hidden>
+      <div class="success">
+        <div class="s-check">✓</div>
+        <div class="s-title">Payment Successful</div>
+        <div class="s-meta" id="sMeta"></div>
+        <div class="inv-box">
+          <div class="inv-head"><span>INVOICE GENERATED</span><span class="pdf-tag">PDF</span></div>
+          <div class="inv-id" id="invId"></div>
+          <div class="inv-actions">
+            <button class="inv-btn primary" id="invDownload" data-agent="invoice-download">DOWNLOAD PDF</button>
+            <button class="inv-btn" id="invCopy" data-agent="invoice-copy">COPY TO AGENT</button>
+          </div>
+        </div>
+        <p class="handoff" id="handoffNote">INVOICE HANDED TO AGENT. AGENT DELIVERS PDF TO OWNER.</p>
+        <button class="inv-btn" style="width:100%;margin-top:.8rem" id="doneBtn">DONE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div><b>OPEN_MART</b> — AGENT-READY STOREFRONT<br>DEPLOYED ON VERCEL · BLITZ HACK 2026</div>
+  <div>AGENTS: READ <b>#catalog-data</b> JSON OR USE <b>window.OPENMART</b> API<br>OPENMART.addToCart(id,qty) · OPENMART.checkoutAsAgent(token) → {ok, invoiceDataUrl}</div>
+</footer>
+
+<script type="application/json" id="catalog-data"></script>
+
+<script>
+/* ============ CATALOG ============ */
+const CATALOG = [
+  {id:'p01',name:'USB-C Cable 2m',cat:'ELECTRONICS',price:3.99,rating:4.6,reviews:1204},
+  {id:'p02',name:'GaN Charger 65W',cat:'ELECTRONICS',price:18.50,rating:4.8,reviews:862},
+  {id:'p03',name:'Mech Keycap Set',cat:'ELECTRONICS',price:24.00,rating:4.5,reviews:411},
+  {id:'p04',name:'Webcam 1080p',cat:'ELECTRONICS',price:32.99,rating:4.3,reviews:289},
+  {id:'p05',name:'BT Speaker Mini',cat:'ELECTRONICS',price:27.50,rating:4.7,reviews:933},
+  {id:'p06',name:'Portable SSD 1TB',cat:'ELECTRONICS',price:89.00,rating:4.9,reviews:1520},
+  {id:'p07',name:'Ceramic Mug',cat:'HOME',price:9.25,rating:4.4,reviews:356},
+  {id:'p08',name:'Desk Lamp Mono',cat:'HOME',price:21.00,rating:4.6,reviews:502},
+  {id:'p09',name:'Throw Blanket',cat:'HOME',price:34.50,rating:4.7,reviews:644},
+  {id:'p10',name:'Plant Pot Set',cat:'HOME',price:7.80,rating:4.2,reviews:198},
+  {id:'p11',name:'Candle Trio',cat:'HOME',price:15.40,rating:4.5,reviews:421},
+  {id:'p12',name:'Heavy Cotton Tee',cat:'APPAREL',price:12.00,rating:4.6,reviews:1102},
+  {id:'p13',name:'Wool Beanie',cat:'APPAREL',price:14.75,rating:4.4,reviews:377},
+  {id:'p14',name:'Canvas Tote',cat:'APPAREL',price:8.50,rating:4.3,reviews:265},
+  {id:'p15',name:'Crew Socks 3pk',cat:'APPAREL',price:6.99,rating:4.5,reviews:812},
+  {id:'p16',name:'Rain Shell Pro',cat:'APPAREL',price:129.00,rating:4.8,reviews:240},
+  {id:'p17',name:'Phone Stand Alu',cat:'ACCESSORIES',price:4.49,rating:4.8,reviews:860},
+  {id:'p18',name:'Laptop Sleeve 14"',cat:'ACCESSORIES',price:19.99,rating:4.5,reviews:433},
+  {id:'p19',name:'Multitool Keychain',cat:'ACCESSORIES',price:11.25,rating:4.4,reviews:310},
+  {id:'p20',name:'Sticker Pack 20',cat:'ACCESSORIES',price:2.50,rating:4.7,reviews:1490},
+  {id:'p21',name:'Watch Strap',cat:'ACCESSORIES',price:13.90,rating:4.3,reviews:222},
+  {id:'p22',name:'Cable Organizer',cat:'ACCESSORIES',price:5.60,rating:4.6,reviews:588},
+  {id:'p23',name:'Notebook A5',cat:'ACCESSORIES',price:6.40,rating:4.5,reviews:704},
+  {id:'p24',name:'Pen Set Black',cat:'ACCESSORIES',price:8.90,rating:4.4,reviews:351}
+];
+document.getElementById('catalog-data').textContent = JSON.stringify(CATALOG);
+
+/* ============ MOCK TOKEN REGISTRY ============ */
+const TOKENS = {
+  'MAP_7F3A-9C2E-4B81-D60A':{owner:'A. OKAFOR',cap:50.00},
+  'MAP_2D81-55AB-E019-77FC':{owner:'J. RIVERA',cap:12.50}
+};
+
+/* ============ STATE ============ */
+let cart = {};            // id -> qty
+let filter = 'ALL', query = '';
+let verifiedToken = null; // {key, owner, cap}
+let lastInvoice = null;   // {id, orderId, owner, total, dataUrl, blobUrl}
+const $ = s => document.querySelector(s);
+const money = n => '$' + n.toFixed(2);
+
+/* ============ RENDER GRID ============ */
+function renderGrid(){
+  const g = $('#grid'); g.innerHTML = '';
+  CATALOG.forEach((p,i) => {
+    if(filter !== 'ALL' && p.cat !== filter) return;
+    if(query && !p.name.toLowerCase().includes(query)) return;
+    const card = document.createElement('div');
+    card.className = 'card'; card.dataset.agent = 'product'; card.dataset.productId = p.id; card.dataset.price = p.price;
+    card.innerHTML = `
+      <div class="p-top"><span class="p-num">${String(i+1).padStart(2,'0')}</span><span class="p-cat">${p.cat}</span></div>
+      <div class="p-name">${p.name}</div>
+      <div class="p-rate">★ ${p.rating} · ${p.reviews.toLocaleString()} REVIEWS</div>
+      <div class="p-bottom">
+        <span class="p-price">${money(p.price)}</span>
+        <button class="add-btn" data-agent="add-to-cart" data-add="${p.id}">ADD +</button>
+      </div>`;
+    g.appendChild(card);
+  });
+}
+renderGrid();
+
+$('#chips').addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if(!c) return;
+  document.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+  c.classList.add('on'); filter = c.dataset.cat; renderGrid();
+});
+$('#search').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); renderGrid(); });
+
+/* ============ CART ============ */
+function addToCart(id, qty=1){ cart[id] = (cart[id]||0) + qty; renderCart(); }
+function cartItems(){ return Object.entries(cart).map(([id,qty]) => ({...CATALOG.find(p=>p.id===id), qty})); }
+function cartTotal(){ return cartItems().reduce((s,it)=>s+it.price*it.qty,0); }
+function renderCart(){
+  const items = cartItems();
+  $('#cartCount').textContent = items.reduce((s,i)=>s+i.qty,0);
+  const body = $('#cartBody');
+  if(!items.length){ body.innerHTML = '<div class="empty-cart">CART EMPTY — ADD SOMETHING.</div>'; }
+  else body.innerHTML = items.map(it => `
+    <div class="line">
+      <div>
+        <div class="line-name">${it.name}</div>
+        <div class="line-meta">${it.cat} · ${money(it.price)} EA</div>
+        <div class="qty" style="margin-top:.5rem">
+          <button data-dec="${it.id}">−</button><span>${it.qty}</span><button data-inc="${it.id}">+</button>
+        </div>
+        <button class="rm" data-rm="${it.id}">REMOVE</button>
+      </div>
+      <div class="line-price">${money(it.price*it.qty)}</div>
+    </div>`).join('');
+  $('#cartTotal').textContent = money(cartTotal());
+}
+renderCart();
+
+$('#grid').addEventListener('click', e => {
+  const b = e.target.closest('[data-add]'); if(b) addToCart(b.dataset.add);
+});
+$('#cartBody').addEventListener('click', e => {
+  const inc = e.target.closest('[data-inc]'), dec = e.target.closest('[data-dec]'), rm = e.target.closest('[data-rm]');
+  if(inc) addToCart(inc.dataset.inc);
+  if(dec){ cart[dec.dataset.dec]--; if(cart[dec.dataset.dec]<=0) delete cart[dec.dataset.dec]; renderCart(); }
+  if(rm){ delete cart[rm.dataset.rm]; renderCart(); }
+});
+const openDrawer = o => { $('#drawer').classList.toggle('open',o); $('#drawerBack').classList.toggle('open',o); };
+$('#cartOpen').onclick = () => openDrawer(true);
+$('#cartClose').onclick = () => openDrawer(false);
+$('#drawerBack').onclick = () => openDrawer(false);
+
+/* ============ CHECKOUT ============ */
+function openCheckout(){
+  if(!cartItems().length) return;
+  openDrawer(false);
+  verifiedToken = null;
+  $('#stepMain').hidden = false; $('#stepProcessing').hidden = true; $('#stepSuccess').hidden = true;
+  $('#humanPane').hidden = true; $('#agentPane').hidden = true;
+  $('#whoHuman').className = 'who-btn'; $('#whoAgent').className = 'who-btn';
+  $('#ownerBox').hidden = true; $('#tokenErr').hidden = true; $('#tokenInput').value = '';
+  $('#coSum').innerHTML = cartItems().map(i=>`${i.qty} × ${i.name.toUpperCase()} — ${money(i.price*i.qty)}`).join('<br>');
+  $('#coTotal').textContent = money(cartTotal());
+  $('#coBack').classList.add('open');
+}
+$('#checkoutBtn').onclick = openCheckout;
+$('#coClose').onclick = () => $('#coBack').classList.remove('open');
+$('#coBack').addEventListener('click', e => { if(e.target === $('#coBack')) $('#coBack').classList.remove('open'); });
+
+$('#whoHuman').onclick = () => {
+  $('#whoHuman').className = 'who-btn sel-human'; $('#whoAgent').className = 'who-btn';
+  $('#humanPane').hidden = false; $('#agentPane').hidden = true;
+};
+$('#whoAgent').onclick = () => {
+  $('#whoAgent').className = 'who-btn sel-agent'; $('#whoHuman').className = 'who-btn';
+  $('#agentPane').hidden = false; $('#humanPane').hidden = true; $('#tokenInput').focus();
+};
+document.querySelectorAll('[data-fill]').forEach(b => b.onclick = () => { $('#tokenInput').value = b.dataset.fill; $('#tokenInput').focus(); });
+
+/* Token verify — reveals OWNER NAME ONLY */
+$('#tokenForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const key = $('#tokenInput').value.trim().toUpperCase();
+  const err = $('#tokenErr'); err.hidden = true; $('#ownerBox').hidden = true; verifiedToken = null;
+  const t = TOKENS[key];
+  if(!t){ err.textContent = '✕ TOKEN NOT FOUND ON MONAD VAULT'; err.hidden = false; return; }
+  if(cartTotal() > t.cap){ err.textContent = `✕ LIMIT EXCEEDED — TOKEN CAP ${money(t.cap)}`; err.hidden = false; return; }
+  verifiedToken = {key, ...t};
+  $('#ownerName').textContent = t.owner;   // name only. nothing else.
+  $('#ownerBox').hidden = false;
+});
+
+$('#humanPay').onclick = () => startPayment({method:'HUMAN CARD', payer:($('#humanName').value||'GUEST').toUpperCase(), tokenKey:'—'});
+$('#authBtn').onclick  = () => startPayment({method:'AGENT TOKEN', payer:verifiedToken.owner, tokenKey:verifiedToken.key});
+
+function startPayment(meta){
+  $('#stepMain').hidden = true; $('#stepProcessing').hidden = false;
+  setTimeout(() => finishPayment(meta), 1400);
+}
+
+/* ============ SUCCESS + PDF INVOICE ============ */
+function finishPayment(meta){
+  const orderId = 'ORD-' + Math.random().toString(36).slice(2,8).toUpperCase();
+  const invNo   = 'MP-2026-' + String(Math.floor(Math.random()*900000)+100000);
+  const total   = cartTotal();
+  const items   = cartItems();
+  const date    = new Date().toISOString().slice(0,10);
+
+  const blob = buildInvoicePDF({invNo, orderId, date, owner:meta.payer, method:meta.method, tokenKey:meta.tokenKey, items, total});
+  const blobUrl = URL.createObjectURL(blob);
+  const reader = new FileReader();
+  reader.onload = () => {
+    lastInvoice = {id:invNo, orderId, owner:meta.payer, total, dataUrl:reader.result, blobUrl};
+    window.OPENMART.lastInvoice = lastInvoice;
+
+    $('#stepProcessing').hidden = true; $('#stepSuccess').hidden = false;
+    $('#sMeta').innerHTML = `ORDER ${orderId}<br>PAYER: ${meta.payer}<br>METHOD: ${meta.method}<br>AMOUNT: ${money(total)}`;
+    $('#invId').textContent = invNo + '.pdf';
+    $('#handoffNote').textContent = meta.method === 'AGENT TOKEN'
+      ? 'INVOICE HANDED TO AGENT. AGENT DELIVERS PDF TO OWNER.'
+      : 'RECEIPT READY FOR DOWNLOAD.';
+    cart = {}; renderCart();
+  };
+  reader.readAsDataURL(blob);
+}
+
+$('#invDownload').onclick = () => {
+  const a = document.createElement('a');
+  a.href = lastInvoice.blobUrl; a.download = lastInvoice.id + '.pdf'; a.click();
+};
+$('#invCopy').onclick = e => {
+  const payload = `INVOICE ${lastInvoice.id} | ORDER ${lastInvoice.orderId} | OWNER ${lastInvoice.owner} | TOTAL ${money(lastInvoice.total)}\nPDF DATA:\n${lastInvoice.dataUrl}`;
+  copyText(payload, e.target);
+};
+$('#doneBtn').onclick = () => $('#coBack').classList.remove('open');
+
+function copyText(text, btn){
+  const done = () => { const o = btn.textContent; btn.textContent = 'COPIED ✓'; setTimeout(()=>btn.textContent=o,1500); };
+  if(navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(done).catch(done);
+  else { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy')}catch(_){} ta.remove(); done(); }
+}
+
+/* ============ MINIMAL PDF BUILDER (no deps) ============ */
+function ascii(s){ return String(s).replace(/[^\x20-\x7E]/g,'-'); }
+function pesc(s){ return ascii(s).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)'); }
+function buildInvoicePDF(d){
+  const L = [];
+  const T = (t,x,y,size,bold)=>L.push(`BT /${bold?'F2':'F1'} ${size} Tf 1 0 0 1 ${x} ${y} Tm (${pesc(t)}) Tj ET`);
+  const LINE = (y)=>L.push(`0.8 w ${50} ${y} m 545 ${y} l S`);
+  T('OPEN_MART',50,790,22,true);
+  T('TAX INVOICE',50,768,11,false);
+  T('INVOICE NO: '+d.invNo,50,740,9,false);
+  T('DATE: '+d.date,50,726,9,false);
+  T('ORDER: '+d.orderId,50,712,9,false);
+  T('STATUS: PAID',455,740,9,true);
+  LINE(700);
+  T('BILL TO (OWNER NAME ONLY)',50,682,8,true);
+  T(d.owner,50,666,13,true);
+  LINE(650);
+  T('ITEM',50,634,8,true); T('QTY',380,634,8,true); T('PRICE',430,634,8,true); T('AMOUNT',495,634,8,true);
+  LINE(626);
+  let y = 608;
+  d.items.forEach(it => {
+    T(it.name,50,y,9,false); T(String(it.qty),380,y,9,false); T moneyGuard(it.price); T(money(it.price*it.qty),495,y,9,false);
+    function moneyGuard(p){ L.push(`BT /F1 9 Tf 1 0 0 1 430 ${y} Tm (${pesc(money(p))}) Tj ET`); }
+    y -= 18;
+  });
+  LINE(y+6);
+  T('TOTAL',430,y-14,11,true); T(money(d.total),495,y-14,11,true);
+  y -= 44;
+  T('PAYMENT METHOD: '+d.method,50,y,9,false);
+  T('TOKEN: '+d.tokenKey,50,y-14,9,false);
+  T('SETTLEMENT: MONAD TESTNET',50,y-28,9,false);
+  LINE(y-44);
+  T('Generated by OPEN_MART - agent-ready storefront. This invoice was handed to the paying agent for delivery to the owner.',50,y-60,7,false);
+  const stream = L.join('\n');
+  const objs = [];
+  objs[1]='<< /Type /Catalog /Pages 2 0 R >>';
+  objs[2]='<< /Type /Pages /Kids [3 0 R] /Count 1 >>';
+  objs[3]='<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>';
+  objs[4]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
+  objs[5]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>';
+  objs[6]='<< /Length '+stream.length+' >>\nstream\n'+stream+'\nendstream';
+  let pdf='%PDF-1.4\n'; const off=[0];
+  for(let i=1;i<=6;i++){ off[i]=pdf.length; pdf+=i+' 0 obj\n'+objs[i]+'\nendobj\n'; }
+  const xref=pdf.length;
+  pdf+='xref\n0 7\n0000000000 65535 f \n';
+  for(let i=1;i<=6;i++) pdf+=String(off[i]).padStart(10,'0')+' 00000 n \n';
+  pdf+='trailer\n<< /Size 7 /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF';
+  return new Blob([pdf],{type:'application/pdf'});
+}
+
+/* ============ AGENT API (for Grok / any bot) ============ */
+window.OPENMART = {
+  catalog: CATALOG,
+  addToCart,
+  getCart: cartItems,
+  getTotal: cartTotal,
+  lastInvoice: null,
+  checkoutAsAgent(key){
+    const t = TOKENS[String(key).trim().toUpperCase()];
+    if(!t) return {ok:false, error:'TOKEN_NOT_FOUND'};
+    if(!cartItems().length) return {ok:false, error:'CART_EMPTY'};
+    if(cartTotal() > t.cap) return {ok:false, error:'LIMIT_EXCEEDED', cap:t.cap};
+    return new Promise(res => {
+      const reader = new FileReader();
+      const blob = buildInvoicePDF({
+        invNo:'MP-2026-'+Math.floor(Math.random()*900000+100000),
+        orderId:'ORD-'+Math.random().toString(36).slice(2,8).toUpperCase(),
+        date:new Date().toISOString().slice(0,10),
+        owner:t.owner, method:'AGENT TOKEN', tokenKey:key, items:cartItems(), total:cartTotal()
+      });
+      reader.onload = () => { cart={}; renderCart(); res({ok:true, owner:t.owner, invoiceDataUrl:reader.result}); };
+      reader.readAsDataURL(blob);
+    });
+  }
+};
+</script>
+</body>
+</html>

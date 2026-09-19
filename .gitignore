@@ -18,10 +18,15 @@ id_rsa.pub
 cache/
 out/
 broadcast/
-lib/
+contracts/lib/
+contracts/cache/
+contracts/out/
+contracts/broadcast/
 
 .DS_Store
 Thumbs.db
 *.log
 .vscode/
 .idea/
+.env.local
+data/
