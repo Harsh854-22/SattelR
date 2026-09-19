@@ -1,8 +1,11 @@
 import { promises as fs } from "fs";
+import os from "os";
 import path from "path";
 import type { DbShape } from "./types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), "sattelr-data")
+  : path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "db.json");
 
 const emptyDb = (): DbShape => ({
