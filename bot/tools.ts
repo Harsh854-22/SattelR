@@ -214,7 +214,8 @@ export const GROK_TOOLS = [
     type: "function",
     function: {
       name: "get_token_policy",
-      description: "Load full policy for a MAP_ token string",
+      description:
+        "Resolve a MAP_ token via POST /api/tokens/lookup (on-chain). Do NOT use GET /api/tokens list — it is often empty.",
       parameters: {
         type: "object",
         properties: { tokenString: { type: "string" } },
