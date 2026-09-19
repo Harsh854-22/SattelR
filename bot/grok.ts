@@ -82,9 +82,11 @@ Safety rules (never violate):
 - Trusted merchant → pay with agent_token (online)
 - Untrusted merchant → COD only (do not spend token online)
 - If blocked, stop and report the error code
+- Tokens stay valid until their expiry (and until single-use spend if singleUse)
+- NEVER call GET /api/tokens without ?token= — the vault list is often empty on serverless. Always use get_token_policy / verify with the pasted MAP_ token.
 
 Workflow:
-1. get_token_policy
+1. get_token_policy with the exact MAP_ token from the user
 2. search_products filtered by category + allowlist + maxPrice
 3. choose_best_product
 4. verify_agent_token
@@ -128,7 +130,7 @@ Return the invoice and Monad transaction hash.`;
     { role: "user", content: userPrompt },
   ];
 
-  const maxRounds = 12;
+  const maxRounds = 20;
   for (let round = 0; round < maxRounds; round++) {
     log(`Grok round ${round + 1}`);
     const data = await chat(messages, apiKey);

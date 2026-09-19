@@ -5,17 +5,17 @@ import { resolveAgentToken } from "@/lib/tokens";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-type Params = { params: { id: string } };
-
-export async function GET(_req: Request, { params }: Params) {
+/** Body lookup — used by bots so long/short MAP_ tokens never depend on URL path. */
+export async function POST(req: Request) {
   try {
-    const decodedId = decodeURIComponent(params.id);
-    const db = await readDb();
-    const token =
-      (await resolveAgentToken(decodedId, db.tokens)) ||
-      db.tokens.find((t) => t.id === decodedId) ||
-      null;
+    const body = await req.json();
+    const tokenString = body?.tokenString || body?.token;
+    if (!tokenString) {
+      return NextResponse.json({ error: "TOKEN_REQUIRED" }, { status: 400 });
+    }
 
+    const db = await readDb();
+    const token = await resolveAgentToken(String(tokenString), db.tokens);
     if (!token) {
       return NextResponse.json({ error: "TOKEN_NOT_FOUND" }, { status: 404 });
     }

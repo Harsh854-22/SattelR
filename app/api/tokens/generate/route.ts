@@ -8,10 +8,15 @@ import {
   usdToWei,
 } from "@/lib/contract";
 import { updateDb } from "@/lib/db";
-import { encodeTokenString, makeTokenId, normalizeCategory } from "@/lib/tokens";
+import {
+  makeTokenId,
+  normalizeCategory,
+  tokenStringFromPolicyId,
+} from "@/lib/tokens";
 import type { AgentToken } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
@@ -80,8 +85,9 @@ export async function POST(req: Request) {
     });
 
     const id = makeTokenId();
-    const tokenBase: Omit<AgentToken, "tokenString"> = {
+    const token: AgentToken = {
       id,
+      tokenString: tokenStringFromPolicyId(policyId),
       ownerWallet,
       agentWallet: agentAddress,
       agentName,
@@ -99,10 +105,6 @@ export async function POST(req: Request) {
       promptTemplate,
       createdAt: new Date().toISOString(),
       txHash,
-    };
-    const token: AgentToken = {
-      ...tokenBase,
-      tokenString: encodeTokenString(tokenBase),
     };
 
     await updateDb((db) => {

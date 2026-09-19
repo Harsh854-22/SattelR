@@ -1,5 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "functions": {
+    "app/api/tokens/generate/route.ts": { "maxDuration": 60 },
+    "app/api/tokens/verify/route.ts": { "maxDuration": 60 },
+    "app/api/tokens/lookup/route.ts": { "maxDuration": 60 },
+    "app/api/orders/[id]/pay/route.ts": { "maxDuration": 60 },
+    "app/api/topup/route.ts": { "maxDuration": 60 }
+  }
 }

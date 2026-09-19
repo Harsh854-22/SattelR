@@ -35,6 +35,13 @@ export function usdToWei(usd: number): bigint {
   return parseEther(mon.toFixed(8));
 }
 
+export function weiToUsd(wei: bigint): number {
+  const rate = Number(process.env.DEMO_MON_TO_USD_RATE || "1");
+  const safeRate = Number.isFinite(rate) && rate > 0 ? rate : 1;
+  const mon = Number(formatEther(wei));
+  return mon * safeRate;
+}
+
 export function getPublicClient() {
   return createPublicClient({
     chain: monadTestnet,
@@ -236,6 +243,67 @@ export async function onChainSpend(args: {
     throw new Error(`spend reverted on-chain: ${hash}`);
   }
   return hash;
+}
+
+export async function readOnChainPolicy(policyId: Hex): Promise<{
+  agent: `0x${string}`;
+  amountLimitUsd: number;
+  spentUsd: number;
+  category: string;
+  allowedWebsites: string[];
+  expiry: string | null;
+  singleUse: boolean;
+  used: boolean;
+  active: boolean;
+} | null> {
+  const publicClient = getPublicClient();
+  try {
+    const result = await publicClient.readContract({
+      address: contractAddress(),
+      abi: agentPayVaultAbi,
+      functionName: "getPolicy",
+      args: [policyId],
+    });
+    const [
+      agent,
+      amountLimit,
+      spent,
+      category,
+      allowedWebsites,
+      expiry,
+      singleUse,
+      used,
+      active,
+    ] = result as [
+      `0x${string}`,
+      bigint,
+      bigint,
+      string,
+      string[],
+      bigint,
+      boolean,
+      boolean,
+      boolean,
+    ];
+    // Empty/zero agent means unknown policy
+    if (!agent || agent === "0x0000000000000000000000000000000000000000") {
+      return null;
+    }
+    const expiryNum = Number(expiry);
+    return {
+      agent,
+      amountLimitUsd: weiToUsd(amountLimit),
+      spentUsd: weiToUsd(spent),
+      category,
+      allowedWebsites: [...allowedWebsites],
+      expiry: expiryNum > 0 ? new Date(expiryNum * 1000).toISOString() : null,
+      singleUse,
+      used,
+      active,
+    };
+  } catch {
+    return null;
+  }
 }
 
 function extractRevertData(err: unknown): Hex | undefined {

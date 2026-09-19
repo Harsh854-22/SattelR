@@ -3,13 +3,14 @@ import { mapRevertToCode, onChainSpend } from "@/lib/contract";
 import { readDb, updateDb } from "@/lib/db";
 import { resolveOrderFromDb } from "@/lib/orders";
 import { getProduct } from "@/lib/products";
-import { resolveTokenFromDb, verifyTokenPolicy } from "@/lib/tokens";
+import { resolveAgentToken, verifyTokenPolicy } from "@/lib/tokens";
 import type { Hex } from "viem";
 import type { Invoice, Order } from "@/lib/types";
 
 type Params = { params: { id: string } };
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function POST(req: Request, { params }: Params) {
   try {
@@ -113,7 +114,7 @@ export async function POST(req: Request, { params }: Params) {
         return NextResponse.json({ error: "MERCHANT_ADDRESS_MISSING" }, { status: 500 });
       }
 
-      const token = resolveTokenFromDb(tokenString, db.tokens);
+      const token = await resolveAgentToken(tokenString, db.tokens);
       if (!token) {
         return NextResponse.json({ error: "TOKEN_NOT_FOUND" }, { status: 400 });
       }
@@ -141,7 +142,10 @@ export async function POST(req: Request, { params }: Params) {
         let updatedOrder!: Order;
         let invoice!: Invoice;
         await updateDb((dbState) => {
-          let t = resolveTokenFromDb(token.tokenString, dbState.tokens);
+          let t =
+            dbState.tokens.find(
+              (x) => x.id === token.id || x.tokenString === token.tokenString
+            ) || null;
           if (!t) {
             t = { ...token };
             dbState.tokens.push(t);

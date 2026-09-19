@@ -83,9 +83,11 @@ export async function verify_agent_token(args: {
 
 export async function get_token_policy(tokenString: string) {
   log("TOOL get_token_policy", tokenString);
-  const data = await api<{ token: AgentToken }>(
-    `/api/tokens/${encodeURIComponent(tokenString)}`
-  );
+  // Body lookup — never put MAP_ in the URL path (breaks / truncates)
+  const data = await api<{ token: AgentToken }>(`/api/tokens/lookup`, {
+    method: "POST",
+    body: JSON.stringify({ tokenString }),
+  });
   return data.token;
 }
 

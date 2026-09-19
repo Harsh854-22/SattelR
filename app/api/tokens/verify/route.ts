@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { readDb } from "@/lib/db";
 import {
   normalizeCategory,
-  resolveTokenFromDb,
+  resolveAgentToken,
   verifyTokenPolicy,
 } from "@/lib/tokens";
 
 export const dynamic = "force-dynamic";
-
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     }
 
     const db = await readDb();
-    const token = resolveTokenFromDb(tokenString, db.tokens);
+    const token = await resolveAgentToken(tokenString, db.tokens);
 
     if (!token) {
       return NextResponse.json(
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json({ ok: true, ownerName, remaining });
+    return NextResponse.json({ ok: true, ownerName, remaining, token });
   } catch (err) {
     const message = err instanceof Error ? err.message : "VERIFY_FAILED";
     return NextResponse.json({ error: message }, { status: 500 });
