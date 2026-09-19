@@ -142,7 +142,11 @@ export default function DashboardPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Generate failed");
+      if (!res.ok) {
+        throw new Error(
+          data.error || data.hint || `Generate failed (${res.status})`
+        );
+      }
       const tokenString = data.token.tokenString as string;
       const prompt = buildPrompt(tokenString, site, category, amountLimitUsd);
       setModal({ token: tokenString, prompt });

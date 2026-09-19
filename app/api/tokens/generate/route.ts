@@ -1,27 +1,36 @@
 import { NextResponse } from "next/server";
-import { onChainGrantPermission } from "@/lib/contract";
+import {
+  agentAccountAddress,
+  ensureAgentHasGas,
+  ensureVaultHas,
+  mapRevertToCode,
+  onChainGrantPermission,
+  usdToWei,
+} from "@/lib/contract";
 import { updateDb } from "@/lib/db";
 import { makeTokenId, makeTokenString, normalizeCategory } from "@/lib/tokens";
 import type { AgentToken } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const agentName = body?.agentName;
+    const agentName = body?.agentName || "grok-bot";
     const purpose = body?.purpose;
     const category = body?.category;
-    const webMode = body?.webMode;
-    const amountLimitUsd = Number(body?.amountLimitUsd);
+    const webMode = body?.webMode || "Allowlist";
+    const amountLimitUsd = Number(body?.amountLimitUsd ?? body?.limit ?? 5);
     const expiry = body?.expiry ?? null;
-    const singleUse = Boolean(body?.singleUse);
-    const promptTemplate = body?.promptTemplate ?? "";
+    const singleUse = body?.singleUse !== false;
+    const promptTemplate = body?.promptTemplate ?? "Use this agent token: {TOKEN}";
 
-    if (!agentName || !purpose || !category || !webMode) {
-      return NextResponse.json({ error: "MISSING_FIELDS" }, { status: 400 });
+    if (!purpose || !category) {
+      return NextResponse.json(
+        { error: "MISSING_FIELDS", hint: "purpose and category are required" },
+        { status: 400 }
+      );
     }
     if (!Number.isFinite(amountLimitUsd) || amountLimitUsd <= 0) {
       return NextResponse.json({ error: "INVALID_AMOUNT" }, { status: 400 });
@@ -33,12 +42,20 @@ export async function POST(req: Request) {
     const normalizedCategory = normalizeCategory(category);
     const allowedWebsites: string[] =
       Array.isArray(body?.allowedWebsites) && body.allowedWebsites.length > 0
-        ? body.allowedWebsites
-        : ["trusted-gadgets.example"];
+        ? body.allowedWebsites.map((s: string) => String(s).trim()).filter(Boolean)
+        : body?.website
+          ? [String(body.website).trim()]
+          : ["trusted-gadgets.example"];
 
-    const agentAddress =
+    let agentAddress: `0x${string}` | undefined =
       (body?.agentWallet as `0x${string}` | undefined) ||
       (process.env.NEXT_PUBLIC_AGENT_ADDRESS as `0x${string}` | undefined);
+    try {
+      // Prefer the address that matches DEMO_PRIVATE_KEY so spend() never fails NotAgent
+      agentAddress = agentAccountAddress();
+    } catch {
+      /* keep env/body address */
+    }
     if (!agentAddress) {
       return NextResponse.json({ error: "AGENT_ADDRESS_MISSING" }, { status: 400 });
     }
@@ -49,6 +66,9 @@ export async function POST(req: Request) {
     }
 
     const expiryUnix = expiry ? Math.floor(new Date(expiry).getTime() / 1000) : 0;
+
+    await ensureAgentHasGas();
+    await ensureVaultHas(usdToWei(amountLimitUsd));
 
     const { policyId, txHash } = await onChainGrantPermission({
       agent: agentAddress,
@@ -90,7 +110,12 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ token, policyId, txHash });
   } catch (err) {
+    console.error("token generate failed", err);
+    const code = mapRevertToCode(err);
     const message = err instanceof Error ? err.message : "TOKEN_GENERATION_FAILED";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: code !== "PAYMENT_FAILED" ? code : message },
+      { status: 500 }
+    );
   }
 }

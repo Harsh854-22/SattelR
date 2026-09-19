@@ -14,9 +14,16 @@ export async function POST(req: Request, { params }: Params) {
   try {
     const id = params.id;
     const body = await req.json();
-    const paymentMethod = body?.paymentMethod as "agent_token" | "cod" | "human_card" | undefined;
-    const tokenString = body?.tokenString as string | undefined;
+    // Accept aliases used by curl/docs/bots: agent_token | token | tokenString
+    const tokenString = (body?.tokenString ?? body?.agent_token ?? body?.token) as
+      | string
+      | undefined;
     const payerName = body?.payerName as string | undefined;
+    let paymentMethod = body?.paymentMethod as "agent_token" | "cod" | "human_card" | undefined;
+    // If a token was supplied without paymentMethod, treat as agent_token pay.
+    if (!paymentMethod && tokenString) {
+      paymentMethod = "agent_token";
+    }
 
     if (!paymentMethod) {
       return NextResponse.json({ error: "PAYMENT_METHOD_REQUIRED" }, { status: 400 });

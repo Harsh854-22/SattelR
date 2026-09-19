@@ -274,10 +274,16 @@ export default function MerchantPage() {
   const payAgent = async () => {
     if (!verifiedKey) return;
     setStep("processing");
+    setTokenErr("");
     const first = items[0];
+    if (!first) {
+      setStep("main");
+      setTokenErr("✕ CART EMPTY");
+      return;
+    }
     try {
-      // For multi-item demo, pay for first item (primary); remaining shown on invoice
-      const create = await fetch("/api/orders/create", {
+      // Pay the first cart line (demo). Keep total ≤ token limit.
+      const createRes = await fetch("/api/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -285,10 +291,13 @@ export default function MerchantPage() {
           qty: first.qty,
           deliveryMethod: first.trusted ? "online" : "cod",
         }),
-      }).then((r) => r.json());
-      if (create.error) throw new Error(create.error);
+      });
+      const create = await createRes.json();
+      if (!createRes.ok || create.error) {
+        throw new Error(create.error || "ORDER_CREATE_FAILED");
+      }
 
-      const pay = await fetch(`/api/orders/${create.order.id}/pay`, {
+      const payRes = await fetch(`/api/orders/${create.order.id}/pay`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -296,9 +305,11 @@ export default function MerchantPage() {
           tokenString: verifiedKey,
           payerName: ownerName,
         }),
-      }).then((r) => r.json());
-
-      if (pay.error) throw new Error(pay.error);
+      });
+      const pay = await payRes.json();
+      if (!payRes.ok || pay.error) {
+        throw new Error(pay.error || "PAYMENT_FAILED");
+      }
 
       finishLocalInvoice({
         method: first.trusted ? "AGENT TOKEN" : "COD",
