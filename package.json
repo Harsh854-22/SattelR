@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:clean": "rm -rf .next && next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_OPTIONS=--max-old-space-size=2048 next start",
     "lint": "next lint",
     "bot": "npx tsx bot/agent.ts",
-    "bot:grok": "npx tsx bot/grok.ts",
-    "dev:clean": "rm -rf .next && next dev"
+    "bot:grok": "npx tsx bot/grok.ts"
   },
   "dependencies": {
     "next": "14.2.35",
