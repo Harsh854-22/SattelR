@@ -1,10 +1,10 @@
-# Monad Agent Pay
+# SattelR
 
 Open-source, self-hostable payment and access-token layer for AI agents on **Monad**.
 
 Users top up with MON, mint restricted purchase tokens, and give those tokens to agents like Grok so they can shop within budget, category, and website limits.
 
-> AI agents are fast, but giving them a full wallet is dangerous. Monad Agent Pay works like a prepaid card with rules: approved items, approved sites, fixed budget, fast settlement on Monad.
+> AI agents are fast, but giving them a full wallet is dangerous. SattelR works like a prepaid card with rules: approved items, approved sites, fixed budget, fast settlement on Monad.
 
 Full product spec: [`context.md`](./context.md)
 

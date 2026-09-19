@@ -1,8 +1,8 @@
-# CONTEXT.md — Monad Agent Pay
+# CONTEXT.md — SattelR
 
 ## 1. Project Name
 
-**Monad Agent Pay**  
+**SattelR**  
 Open-source, self-hostable payment/access-token layer for AI agents on Monad.
 
 ## 2. One-Line Pitch
@@ -81,7 +81,7 @@ For the demo, external websites should be mocked or represented by a local merch
 
 ## 5. Product Concept
 
-Monad Agent Pay is a wallet + policy engine for AI agents.
+SattelR is a wallet + policy engine for AI agents.
 
 A human user deposits MON into a smart contract or app-controlled vault. The app gives the user internal USD-equivalent credits for demo purposes. The user then creates a limited access token.
 
@@ -113,7 +113,7 @@ The AI agent can only use this token to make purchases that match the policy.
 
 The demo should show:
 
-> “AI agents are fast, but giving them full wallet access is dangerous. Monad Agent Pay gives agents a limited, programmable payment token. It works like a prepaid card with rules. The agent can buy only approved items, from approved websites, up to a fixed budget. All payments settle quickly on Monad.”
+> “AI agents are fast, but giving them full wallet access is dangerous. SattelR gives agents a limited, programmable payment token. It works like a prepaid card with rules. The agent can buy only approved items, from approved websites, up to a fixed budget. All payments settle quickly on Monad.”
 
 ## 7. Target Users
 
@@ -1141,7 +1141,7 @@ Use these points in the pitch:
 
 1. AI agents are becoming shoppers, buyers, and procurement operators.
 2. Giving an agent a full wallet or credit card is unsafe.
-3. Monad Agent Pay creates restricted, programmable payment tokens.
+3. SattelR creates restricted, programmable payment tokens.
 4. Users keep control by setting amount, category, website, and expiry.
 5. Agents can act autonomously without risking full funds.
 6. Monad is ideal because agents need instant, low-cost settlement.
