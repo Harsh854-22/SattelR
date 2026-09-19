@@ -25,6 +25,7 @@ contracts/broadcast/
 
 .DS_Store
 Thumbs.db
+*:Zone.Identifier
 *.log
 .vscode/
 .idea/
